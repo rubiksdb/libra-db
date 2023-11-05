@@ -3,13 +3,11 @@
   paxos logging and replicated n-way.  By replaying the paxos log, we
   can always rebuild the database in-memory.
 
-  Libra has greate API latency due to in-memory property.
-
 # where libra-db can be used
   Libra is a great fit for building a root server with limit number of
   records in memory.
 
-  It is also possible to create mutlple libra db across many servers
+  It is also possible to stack multiple libra db across many servers
   to serve large number of in-memory records.
 
 # run libra db locally
@@ -38,7 +36,30 @@
     PARTICIPANT(3,370602853)     127.0.0.1:30004    PC Q0 Q1  2
     ```
 
-  - performance test
+  - get records
+    ```
+    hxu@hxu-XPS-9320:~/wkk2$ go/bin/libra-cli $LIBRA get 1,00 1,01
+    1,00=9,[]
+    1,01=9,[]
+    ```
+
+    in table 1, we get key 0x00 and 0x01.  The response gives clock (9)
+    and empty value for both keys.
+
+  - commit and then get records
+    ```
+    hxu@hxu-XPS-9320:~/libra-db$ go/bin/libra-cli $LIBRA commit 1,00=9,01 1,01=9,02
+    new slot=10
+
+    hxu@hxu-XPS-9320:~/libra-db$ go/bin/libra-cli $LIBRA get 1,00 1,01
+    1,00=10,01
+    1,01=10,02
+    ````
+
+    in table 1, we commit key/val 0x00=0x01, 0x01=0x02, both with the
+    clock=9.  After commit, clock changes to 10.
+
+  - performance test (commit 10K records into db)
     ```
     xu@hxu-XPS-9320:~/libra-db$ go/bin/libra-perf $LIBRA -wr 1 -ds count=10000
     2023-11-02T23:18:16 libra-perf.go:48/main  INFO Libra performance test with: rr=0 wr=1 offset=0,count=10000,uint
@@ -55,7 +76,7 @@
     2023-11-02T23:18:17 libra-perf.go:68/main  INFO all done!!
     ```
 
-  - list the inserted db
+  - list the db records
     ```
     hxu@hxu-XPS-9320:~/libra-db$ go/bin/libra-cli $LIBRA list 0
     ...
