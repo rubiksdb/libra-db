@@ -1,22 +1,21 @@
 # what is libra-db
-  Libra is a key-value in-memory DB.  Any change (commit) goes through
-  paxos logging and replicated n-way.  By replaying the paxos log, we
-  can always rebuild the database in-memory.  With N-way (non-even)
-  replication, we allow up to N/2 server go down.
+  Libra is a key-value in-memory DB.  Any change (insert/update/delete)
+  goes through paxos logging and replicated n-way.  By replaying the 
+  paxos log, we can always rebuild the database in-memory.
 
-  Inside we maintain a least recent un-checkpointed (LRU) records in
-  a list.  We do so to checkpoint the records when necessary and trim
-  the oldest paxos log.
+  We maintain a list of least recent un-checkpointed (LRU) records.  We
+  do so to checkpoint the records when necessary and trim the oldest paxos
+  log.
 
-  The records are then indexed by a randomized binary search tree.
-  With the BST we can search next/prev record by a given key(cursor)
-  and that's how the table iteration works.  Find by key is achieved 
-  by an efficient hash table.
+  The records are then indexed by a randomized binary search tree.  We
+  we can search next/prev record by a given key(cursor) and that's how
+  the table iteration works.  Find by key is achieved by an efficient
+  hash table.
 
-  Libra is a load link/store conditional(LL/SC) transactional db.
-  The READ API gives both value and clock.  We then send the modified
-  value plus the clock in the COMMIT API.  The COMMIT can succeed only
-  when no one else commited earlier before the clock.
+  Libra is a load link/store conditional(LL/SC) transactional db.  The
+  READ API gives both value and clock.  We then send the modified value
+  plus the clock in the COMMIT API.  The COMMIT can succeed only when
+  no one else commited earlier with the same clock.
 
 
 # where libra-db can be used
